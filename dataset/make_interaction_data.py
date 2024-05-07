@@ -77,14 +77,3 @@ class SteamGamesPreprocessor(BasePreProcessor):
     def save(self, path):
         self.processed_data.to_pickle(path)
         print(f'Saved to {path}')
-    
-def preprocessor_factory(game_name:str, data):
-    if game_name.lower() == 'amazon_games':
-        preprocesser = AmazonGamesPreprocessor(data)
-    elif game_name.lower() == 'steam_games':
-        preprocesser = SteamGamesPreprocessor(data)
-    else:
-        raise ValueError('Invalid data name')
-    preprocesser.preprocess()
-    preprocesser.save(f'data/{game_name}_interaction_data.pkl')
-    return None

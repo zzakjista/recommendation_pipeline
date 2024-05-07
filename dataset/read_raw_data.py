@@ -33,13 +33,5 @@ class DataReader:
         data = pd.read_csv(path, **kwargs)
         return data
     
-def data_source_factory(game_name:str):
-    reader = DataReader('amazon', 'games_review', ('2012-01-01', '2012-12-31'))
-    if game_name.lower() == 'amazon_games':
-        data = reader.read_gz_to_pandas('data/Video_Games_5.json.gz')
-    elif game_name.lower() == 'steam_games':
-        data = reader.read_csv_to_pandas('data/steam-200k.csv', header=None, names=['user_id', 'item_id', 'action', 'rating', 'dummy'])
-    else:
-        raise ValueError('Invalid game name')
-    return data
+
 
