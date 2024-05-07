@@ -1,6 +1,10 @@
 import torch
 
 class ModelConfig:
+    """
+    Model의 파라미터를 관리하는 클래스
+    추후 argparse로 관리할 수 있음
+    """
     def __init__(self):
         self.model_name:str = 'AutoRec'
         self.version:str = 'v0.0'
@@ -17,6 +21,10 @@ class ModelConfig:
 
 
 class ServiceConfig:
+    """
+    Service의 파라미터를 관리하는 클래스
+    튜닝과 관련되어있지 않아 argparse로 관리할 필요가 없음
+    """
     def __init__(self):
         self.game_name:str = 'steam_games' # ['steam_games', 'amazon_games']
         self.bucket = None
