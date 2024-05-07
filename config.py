@@ -1,4 +1,5 @@
 import torch
+
 class ModelConfig:
     def __init__(self):
         self.model_name:str = 'AutoRec'
@@ -16,7 +17,8 @@ class ModelConfig:
 
 
 class ServiceConfig:
-
     def __init__(self):
         self.game_name:str = 'steam_games' # ['steam_games', 'amazon_games']
+        self.bucket = None
+        self.region = None
 
