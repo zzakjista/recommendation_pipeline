@@ -1,8 +1,5 @@
 import torch
 class ModelConfig:
-    """
-    model 관련된 파라미터를 관리하는 config class
-    """
     def __init__(self):
         self.model_name:str = 'AutoRec'
         self.version:str = 'v0.0'
@@ -19,9 +16,7 @@ class ModelConfig:
 
 
 class ServiceConfig:
-    """
-    Service와 관련된 파라미터를 관리하는 config class
-    """
+
     def __init__(self):
         self.game_name:str = 'steam_games' # ['steam_games', 'amazon_games']
 
