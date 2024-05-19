@@ -1,4 +1,9 @@
-from .trainer import AERunner
+from .trainer import AERunner, EASERunner
 
-def runner_factory(model, dataloader, optimizer, criterion, lr, device, dataset, scheduler=None):
-    return AERunner(model, dataloader, optimizer, criterion, lr, device, dataset, scheduler=None)
+def runner_factory(model, dataloader, args):
+    if args.model == 'autoencoder':
+        return AERunner(model, dataloader, args)
+    elif args.model == 'ease':
+        return EASERunner(model, dataloader, args)
+    else:
+        raise ValueError('Unknown model name: {}'.format(args.model))

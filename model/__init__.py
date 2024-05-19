@@ -1,7 +1,9 @@
 from .autoencoder import AutoRec
-
-def model_factory(model_name:str, input_dim:int, hidden_dim:int):
-    if model_name == 'AutoRec':
-        return AutoRec(input_dim, hidden_dim)
+from .ease import EASE
+def model_factory(args):
+    if args.model == 'autoencoder':
+        return AutoRec(args)
+    elif args.model == 'ease':
+        return EASE()
     else:
-        raise ValueError('Unknown model name: {}'.format(model_name))
+        raise ValueError('Unknown model name: {}'.format(args.model))

@@ -20,13 +20,10 @@ class BaseRunner(ABC):
     - save : 모델의 checkpoint를 저장하는 기능
     - load : 모델의 checkpoint를 불러오는 기능
     """
-    def __init__(self, model, dataloader, optimizer, criterion, lr, device, scheduler=None):
+    def __init__(self, model, dataloader, args):
         self.model = model
         self.dataloader = dataloader
-        self.optimizer = optim.Adam(model.parameters(), lr=lr) if optimizer=='adam' else optim.SGD(model.parameters(), lr=lr)
-        self.criterion = nn.MSELoss() if criterion=='mse' else nn.CrossEntropyLoss()
-        self.device = device
-        self.scheduler = scheduler
+        self.args = args 
 
     @abstractmethod
     def train(self, train_loader, epoch):
@@ -55,28 +52,34 @@ class BaseRunner(ABC):
 
 class AERunner(BaseRunner):
 
-    def __init__(self, model, dataloader, optimizer, criterion, lr, device, dataset, scheduler=None):
-        super().__init__(model, dataloader, optimizer, criterion, lr, device, scheduler)
-        self.dataset = dataset
-        self.model = model.to(device)
+    def __init__(self, model, dataloader, args):
+        super().__init__(model, dataloader, args)
+        self.model = model
+        self.dataloader = dataloader
+        self.dataset = dataloader.dataset
+        self.lr = args.lr
+        self.device = args.device
+        self.model = model.to(self.device)
+        self.topk = args.topk
+        self.num_epochs = args.num_epochs
+        self.optimizer = self._create_optimizer(args.optimizer)
+        self.criterion = self._create_criterion(args.criterion)
 
-    def train(self, num_epochs):
+    def train(self):
 
-        for epoch in range(1, num_epochs + 1):
+        for epoch in range(1, self.num_epochs + 1):
             tbar = tqdm(range(1))
             for _ in tbar:
                 loss = self.train_one_epoch()
                 NDCG, HIT = self.evaluate()
-                tbar.set_description(f'Epoch: {epoch:3d}| Train loss: {loss:.5f}| NDCG@10: {NDCG:.5f}| HIT@10: {HIT:.5f}')
-            if self.scheduler:
-                self.scheduler.step()
+                tbar.set_description(f'Epoch: {epoch:3d}| Train loss: {loss:.5f}| NDCG: {NDCG:.5f}| HIT: {HIT:.5f}')
 
     def train_one_epoch(self):
         self.model.train()
         loss_val = 0
         for users in self.dataloader:
             user_list = users.tolist()
-            mat = self.dataset.get_matrix(user_list)
+            mat = self.dataset.get_matrix(user_list, trainYn=True)
             mat = mat.to(self.device)
             recon_mat = self.model(mat)
 
@@ -89,16 +92,14 @@ class AERunner(BaseRunner):
         loss_val /= len(self.dataloader)
         return loss_val
     
-    def evaluate(self, top_k=5):
+    def evaluate(self):
         self.model.eval()
-
-        NDCG = 0.0 # NDCG@10
-        HIT = 0.0 # HIT@10
-
+        NDCG = 0.0 
+        HIT = 0.0 
         with torch.no_grad():
             for users in self.dataloader:
                 user_list = users.tolist()
-                mat = self.dataset.get_matrix(user_list).to(self.device)
+                mat = self.dataset.get_matrix(user_list, trainYn=False).to(self.device)
                 recon_mat = self.model(mat)
                 recon_mat = recon_mat.softmax(dim = 1)
                 recon_mat[mat == 1] = -1.
@@ -107,7 +108,7 @@ class AERunner(BaseRunner):
                 for user, rec in zip(users, rec_list):
                     user = user.item()
                     uv = self.dataset.valid_data[user] 
-                    up = rec[-top_k:].cpu().numpy().tolist()
+                    up = rec[-self.topk:].cpu().numpy().tolist()
                     NDCG += get_ndcg(pred_list = up, true_list = uv)
                     HIT += get_hit(pred_list = up, true_list = uv)
 
@@ -116,7 +117,33 @@ class AERunner(BaseRunner):
         return NDCG, HIT
     
     def inference(self, user_ids):
-        pass
+        self.model.eval()
+
+        user_list = [user_ids]
+        mat = self.dataset.get_matrix(user_list, trainYn=False).to(self.device)
+        recon_mat = self.model(mat)
+        recon_mat = recon_mat.softmax(dim = 1)
+        recon_mat[mat == 1] = -1.
+        rec_list = recon_mat.argsort(dim = 1)
+        rec_list = rec_list[0].cpu().numpy().tolist()
+        rec_list = rec_list[-self.topk:]
+        return rec_list
+
+    def _create_optimizer(self, optimizer):
+        if optimizer == 'adam':
+            return optim.Adam(self.model.parameters(), lr=self.lr)
+        elif optimizer == 'sgd':
+            return optim.SGD(self.model.parameters(), lr=self.lr)
+        else:
+            raise ValueError('Invalid optimizer')
+
+    def _create_criterion(self, criterion):
+        if criterion == 'mse':
+            return nn.MSELoss()
+        elif criterion == 'ce':
+            return nn.CrossEntropyLoss()
+        else:
+            raise ValueError('Invalid criterion')
 
     def save(self, path):
         torch.save(self.model.state_dict(), path)
@@ -127,3 +154,79 @@ class AERunner(BaseRunner):
         self.model.load_state_dict(torch.load(path))
         print(f'Model loaded from {path}')
         return None
+    
+
+
+class EASERunner(BaseRunner):
+
+    def __init__(self, model, dataloader, args):
+        super().__init__(model, dataloader, args)
+        self.model = model
+        self.dataloader = dataloader
+        self.dataset = dataloader.dataset
+        self.device = args.device
+        self.topk = args.topk
+        self.num_epochs = args.num_epochs
+        self.reg = args.reg
+
+    def train(self):
+        X = self.dataset.make_sparse_matrix(trainYn=True)
+        for reg in self.reg:
+            self.train_one_epoch(X, reg)
+            NDCG, HIT = self.evaluate()
+            print(f'NDCG:{NDCG} / HIT: {HIT}')
+        return None
+        
+    def train_one_epoch(self, X, reg):
+        self.model.X = self.model._convert_sp_mat_to_sp_tensor(X)
+        self.model.fit(reg)
+        return None
+    
+    def evaluate(self):
+        NDCG = 0.0 
+        HIT = 0.0 
+        pred = self.model.pred.cpu()
+        X = self.dataset.make_sparse_matrix(trainYn=True).toarray()
+        mat = torch.from_numpy(X)
+        pred[mat == 1] = -1
+        pred = pred.argsort(dim = 1)
+
+        for user, rec1 in tqdm(enumerate(pred)):
+            uv = self.dataset.valid_data[user]
+
+            # ranking
+            up = rec1[-5:].cpu().numpy().tolist()[::-1]
+
+            NDCG += get_ndcg(pred_list = up, true_list = uv)
+            HIT += get_hit(pred_list = up, true_list = uv)
+
+        NDCG /= len(self.dataset.train_data)
+        HIT /= len(self.dataset.train_data)
+
+        return NDCG, HIT
+    
+    def inference(self):
+        pred = self.model.pred.cpu() # matrix 불러오기
+        X = self.dataset.make_sparse_matrix(trainYn=False).toarray()
+        mat = torch.from_numpy(X)
+        pred[mat == 1] = -1
+        # 유저 id row만 가져오기
+        pred = pred.argsort(dim = 1) # dimension out of range 이유 : 
+        # 각 유저의 top k 추천 아이템을 뽑아서 리스트로 만들어주기
+        rec_list = {}
+        for user, rec1 in enumerate(pred):
+            up = rec1[-5:].cpu().numpy().tolist()[::-1]
+            rec_list[user] = up
+
+        # rec_list를 json으로 저장
+        import json
+        with open('rec_list.json', 'w') as f:
+            json.dump(rec_list, f)
+
+        return rec_list
+
+    def save(self, path):
+        pass
+
+    def load(self, path):
+        pass
