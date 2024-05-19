@@ -1,4 +1,12 @@
-from .dataloader import PytorchDataLoader
+from .dataloader import PytorchDataLoader, MatrixDataLoader
 
-def dataloader_factory(dataset, batch_size:int, shuffle:bool, num_workers:int):
-    return PytorchDataLoader(dataset, batch_size, shuffle, num_workers)
+def dataloader_factory(dataset, args):
+    if args.model == 'autoencoder':
+        return PytorchDataLoader(dataset, args)
+    elif args.model == 'ease':
+        return MatrixDataLoader(dataset, args)
+    else:
+        raise ValueError(f"model {args.model} is not supported")
+
+
+    
