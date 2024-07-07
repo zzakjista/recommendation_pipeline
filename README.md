@@ -1,16 +1,35 @@
 # recommendation_pipeline
 여러 개의 데이터셋과 모델 파이프라인을 테스트하는 코드
-성능을 높이기 위한 Meta 정보 사용은 자명하지만...
-interaction 구성으로 기본적인 시스템을 구축하고 내부 로직을 확장성있게 가져가려고 한다.
+
+[Command]
+``` 
+# 가상 환경 구축 
+python -m venv .venv
+```
+```
+# poetry 설치
+poetry install
+``` 
+``` 
+# model 학습
+python recommender_service.py --mode train --model_code autoencoder
+```
+``` 
+# app server에서 inference
+python app.py
+```
 
 [dataset]
 - Steam-200k : [https://www.kaggle.com/datasets/tamber/steam-video-games]
 - Amazon games Review : [https://nijianmo.github.io/amazon/index.html]
+- ml-100k 
 
 [Model]
 - AutoEncoder
-- EASE (추가 예정)
+- EASE
+- Autoencoder with side information 
+- vae (추가 예정)
+
 
 [특이사항]
-- hyper parameter config 관리 방안을 argparse를 사용할 것은 검토 중
 
