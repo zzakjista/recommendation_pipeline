@@ -1,0 +1,1 @@
+{"mode": "train", "data_code": "steam_games", "metayn": false, "topk": 10, "num_users": 12393, "num_items": 5155, "model_code": "autoencoder", "num_epochs": 1, "batch_size": 256, "lr": 0.001, "optimizer": "adam", "device": "cuda", "criterion": "mse", "hidden_dim": 64, "latent_dim": 64, "dropout": 0.5, "weight_decay": 0.0, "reg": [100.0]}
