@@ -1,0 +1,14 @@
+# 공통 변수
+seed : 42
+mode : train
+device : cuda
+
+defaults:
+
+  - data : steam_games
+  - dataset : ease
+  - dataloader : pytorch_dataloader
+  - optimizer : sgd
+  - model: ease
+  - runner : ease
+  - generator : ease
