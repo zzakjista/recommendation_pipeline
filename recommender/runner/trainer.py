@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 import numpy as np
+from hydra.utils import instantiate
 from tqdm import tqdm
 from .metric import get_ndcg, get_hit
 from .base import BaseRunner
@@ -10,18 +11,18 @@ from .base import BaseRunner
 
 class AERunner(BaseRunner):
 
-    def __init__(self, model, dataloader, args):
-        super().__init__(model, dataloader, args)
+    def __init__(self, model, dataloader, cfg):
+        super().__init__(model, dataloader, cfg)
         self.model = model
         self.dataloader = dataloader
         self.dataset = dataloader.dataset
-        self.lr = args.lr
-        self.device = args.device
+        self.lr = cfg.optimizer.lr
+        self.device = cfg.device
         self.model = model.to(self.device)
-        self.topk = args.topk
-        self.num_epochs = args.num_epochs
-        self.optimizer = self._create_optimizer(args.optimizer)
-        self.criterion = self._create_criterion(args.criterion)
+        self.topk = cfg.topk
+        self.num_epochs = cfg.runner.num_epochs
+        self.optimizer = instantiate(cfg.optimizer, model.parameters(), lr=self.lr) # hydra util로 instance 생성
+        self.criterion = instantiate(cfg.criterion)
 
     def train(self):
 
@@ -118,15 +119,15 @@ class AERunner(BaseRunner):
 import random
 class EASERunner(BaseRunner):
 
-    def __init__(self, model, dataloader, args):
-        super().__init__(model, dataloader, args)
+    def __init__(self, model, dataloader, cfg):
+        super().__init__(model, dataloader, cfg)
         self.model = model
         self.dataloader = dataloader
         self.dataset = dataloader.dataset
-        self.device = args.device
-        self.topk = args.topk
-        self.num_epochs = args.num_epochs
-        self.reg = args.reg
+        self.device = cfg.device
+        self.topk = cfg.topk
+        self.num_epochs = cfg.num_epochs
+        self.reg = cfg.reg
 
     def train(self):
         X = self.dataset.make_sparse_matrix(trainYn=True)

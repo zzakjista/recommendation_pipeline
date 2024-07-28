@@ -2,12 +2,12 @@ from torch import nn
 import numpy as np
 
 class AutoRec(nn.Module):
-    def __init__(self, args):
+    def __init__(self, cfg):
         super(AutoRec, self).__init__()
-        self.hidden_dim = args.hidden_dim
-        self.latent_dim = args.latent_dim
-        self.num_users = args.num_users
-        self.num_items = args.num_items
+        self.hidden_dim = cfg.model.hidden_dim
+        self.latent_dim = cfg.model.latent_dim
+        self.num_users = cfg.dataset.num_users
+        self.num_items = cfg.dataset.num_items
 
         self.encoder = nn.Sequential(
             nn.Linear(self.num_items, self.hidden_dim),

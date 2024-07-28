@@ -39,7 +39,6 @@ class SteamGamesReader(BaseDataReader):
         return dataset
     
     def read_interaction_data(self, path:str):
-        # path : 'data/steam-200k.csv'
         return self.read_csv_to_pandas(path, header=None, names=['user_id', 'item_id', 'action', 'rating', 'dummy'])
     
     def read_meta_data(self, path:str):

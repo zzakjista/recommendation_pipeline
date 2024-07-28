@@ -7,7 +7,7 @@ class BasePreProcessor(ABC):
     Abstract class for data processing
     모든 preprocessor는 이 클래스를 상속받아야 한다.
     """
-    def __init__(self, dataset, args):
+    def __init__(self, dataset, cfg):
         self.dataset = dataset
         self.processed_data = None
 
@@ -26,9 +26,9 @@ class AmazonGamesPreprocessor(BasePreProcessor):
     input : raw_data : pd.DataFrame
     output : interaction : pd.DataFrame
     """
-    def __init__(self, dataset, args):
-        super().__init__(dataset, args)
-        self.args = args 
+    def __init__(self, dataset, cfg):
+        super().__init__(dataset, cfg)
+        self.cfg = cfg 
 
 
     def preprocess(self):
@@ -69,9 +69,9 @@ class SteamGamesPreprocessor(BasePreProcessor):
     :output: 
         - dataset (preprocessed)
     """
-    def __init__(self, dataset, args):
-        super().__init__(dataset, args)
-        self.args = args 
+    def __init__(self, dataset, cfg):
+        super().__init__(dataset, cfg)
+        self.cfg = cfg 
 
     def preprocess(self):
         interaction = self._ppc_interaction()
@@ -106,14 +106,14 @@ class MovieLensPreprocessor(BasePreProcessor):
     :output: 
         - dataset (preprocessed)
     """
-    def __init__(self, dataset, args):
-        super().__init__(dataset, args)
-        self.args = args 
+    def __init__(self, dataset, cfg):
+        super().__init__(dataset, cfg)
+        self.cfg = cfg 
 
     def preprocess(self):
         interaction = self._ppc_interaction()
         self.dataset['interaction'] = interaction
-        if self.args.metayn:
+        if self.cfg.metayn:
             meta = self._ppc_meta()
             self.dataset['meta'] = meta
         return self.dataset

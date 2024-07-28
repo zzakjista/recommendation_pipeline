@@ -12,10 +12,10 @@ class BaseRunner(ABC):
     - save : 모델의 checkpoint를 저장하는 기능
     - load : 모델의 checkpoint를 불러오는 기능
     """
-    def __init__(self, model, dataloader, args):
+    def __init__(self, model, dataloader, cfg):
         self.model = model
         self.dataloader = dataloader
-        self.args = args 
+        self.cfg = cfg 
 
     @abstractmethod
     def train(self, train_loader, epoch):

@@ -10,9 +10,9 @@ class AEDataset(BaseDataset):
     """
     Autoencoder 모델 학습에 사용할 데이터셋을 로드하고, 각 모델에 필요한 데이터셋을 처리하는 기능을 제공하는 클래스
     """
-    def __init__(self, args):
+    def __init__(self, cfg):
         super().__init__() # 부모 클래스의 생성자를 호출하여 상속받은 멤버 변수 초기화
-        self.data_code = args.data_code
+        self.data_code = cfg.data.data_code
         self.user_item_dict = None
         self.train_data = {}
         self.valid_data = {}
@@ -33,9 +33,9 @@ class AEDataset(BaseDataset):
         self.num_items = self.data['item_id'].nunique()
         self.users = [i for i in range(self.num_users)]
         
-        args.num_users = self.num_users
-        args.num_items = self.num_items
-
+        cfg.dataset.num_users = self.num_users
+        cfg.dataset.num_items = self.num_items
+        print(f'num_users: {cfg.dataset.num_users}, num_items: {cfg.dataset.num_items}')
         self.user_item_dict = self.make_user_item_dict()
         self.train_valid_split()
 
@@ -99,9 +99,9 @@ class EASEDataset(BaseDataset):
     """
     EASE 모델 학습에 사용할 데이터셋을 로드하고, 각 모델에 필요한 데이터셋을 처리하는 기능을 제공하는 클래스
     """
-    def __init__(self, args):
-        self.args = args
-        self.dataset = self.load(f'data/{args.data_code}_interaction_data.pkl')
+    def __init__(self, cfg):
+        self.cfg = cfg
+        self.dataset = self.load(f'recommender/data/{cfg.data.data_code}_interaction_data.pkl')
         
         self.data = self.dataset['interaction']
         self.user2idx = self.encode(self.data['user_id'])
@@ -113,9 +113,10 @@ class EASEDataset(BaseDataset):
 
         self.num_users = self.data['user_id'].nunique()
         self.num_items = self.data['item_id'].nunique()
-        args.num_users = self.num_users
-        args.num_items = self.num_items
+        cfg.dataset.num_users = self.num_users
+        cfg.dataset.num_items = self.num_items
         self.users = [i for i in range(self.num_users)]
+        print(f'num_users: {cfg.dataset.num_users}, num_items: {cfg.dataset.num_items}')
         
         self.train_data = {}
         self.valid_data = {}

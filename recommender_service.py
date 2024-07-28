@@ -1,15 +1,20 @@
+import os 
 import json
 import torch
 import bentoml
+import hydra
+from hydra.utils import get_original_cwd
+from omegaconf import DictConfig, OmegaConf
+from hydra.core.hydra_config import HydraConfig
 from recommender.dataset import data_source_factory, preprocessor_factory, dataset_factory
 from recommender.dataloader import dataloader_factory
 from recommender.model import model_factory
 from recommender.runner import runner_factory
 from recommender.generator.autoencoder import AEGenerator
-from recommender.arguments import args
 from recommender.util import save_bento_model   
 
-def train(args):
+@hydra.main(config_path='recommender/configs', config_name="config.yaml")
+def train(cfg: DictConfig) -> None:
     """
     학습을 진행하고 산출물을 저장하는 기능
     :input: 
@@ -21,13 +26,15 @@ def train(args):
         - checkpoint/vocab.json
         - checkpoint/{args.model_code}.pth
     """
-    data = data_source_factory(args)
-    preprocessor_factory(data=data, args=args)
-    dataset = dataset_factory(args)
-    dataloader = dataloader_factory(dataset, args)
-    model = model_factory(args)
-    runner = runner_factory(model, dataloader, args)
+    hydra_dir = os.getcwd()
+    original_dir = get_original_cwd()
+    os.chdir(original_dir)
+    dataset = dataset_factory(cfg)
+    dataloader = dataloader_factory(dataset, cfg)
+    model = model_factory(cfg)
+    runner = runner_factory(model, dataloader, cfg)
     runner.train()
+    return None
     config = args.__dict__
     with open(f'recommender/checkpoint/config.json', 'w') as f:
         json.dump(config, f)
@@ -58,7 +65,6 @@ def inference(request):
 
     
 if __name__ == '__main__':
-    if args.mode== 'train':
-        train(args)
+    train()
 
 
