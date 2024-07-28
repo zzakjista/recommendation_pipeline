@@ -1,14 +1,16 @@
 # 공통 변수
 seed : 42
 mode : train
-device : cuda
-
+device : cpu
+model_code : autoencoder
+topk : 5
 defaults:
 
-  - data : steam_games
-  - dataset : ease
+  - data : data_source
+  - dataset : autoencoder
   - dataloader : pytorch_dataloader
   - optimizer : sgd
-  - model: ease
-  - runner : ease
-  - generator : ease
+  - criterion : mse
+  - model: autoencoder
+  - runner : autoencoder
+  - generator : autoencoder
