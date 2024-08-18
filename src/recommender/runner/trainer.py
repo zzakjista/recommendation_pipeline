@@ -126,8 +126,7 @@ class EASERunner(BaseRunner):
         self.dataset = dataloader.dataset
         self.device = cfg.device
         self.topk = cfg.topk
-        self.num_epochs = cfg.num_epochs
-        self.reg = cfg.reg
+        self.reg = cfg.runner.reg
 
     def train(self):
         X = self.dataset.make_sparse_matrix(trainYn=True)
@@ -182,7 +181,7 @@ class EASERunner(BaseRunner):
         mat = torch.from_numpy(X)
         pred[mat == 1] = -1
         # 유저 id row만 가져오기
-        pred = pred.argsort(dim = 1) # dimension out of range 이유 : 
+        pred = pred.argsort(dim = 1)
         # 각 유저의 top k 추천 아이템을 뽑아서 리스트로 만들어주기
         rec_list = {}
         for user, rec1 in enumerate(pred):

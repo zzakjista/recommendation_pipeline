@@ -11,7 +11,7 @@ def preprocessor_factory(data, cfg):
     else:
         raise ValueError('Invalid data name')
     preprocesser.preprocess()
-    preprocesser.save(f'recommender/data/{cfg.data.data_code}_interaction_data.pkl')
+    preprocesser.save(f'recommender/example_data/{cfg.data.data_code}_interaction_data.pkl')
     return None
 
 def model_dataset_factory(cfg):

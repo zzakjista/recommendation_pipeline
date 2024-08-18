@@ -17,10 +17,10 @@ class AEDataset(BaseDataset):
         self.train_data = {}
         self.valid_data = {}
 
-        self.dataset = self.load(f'recommender/data/{self.data_code}_interaction_data.pkl')
+        self.dataset = self.load(f'recommender/example_data/{self.data_code}_interaction_data.pkl')
         
         self.data = self.dataset['interaction']
-        
+        self.data = self.data[:1000] # small data for test
         self.user2idx = self.encode(self.data['user_id'])
         self.idx2user = self.decode(self.data['user_id'])
         self.item2idx = self.encode(self.data['item_id'])
@@ -38,10 +38,7 @@ class AEDataset(BaseDataset):
         print(f'num_users: {cfg.dataset.num_users}, num_items: {cfg.dataset.num_items}')
         self.user_item_dict = self.make_user_item_dict()
         self.train_valid_split()
-
-        with open(f'recommender/checkpoint/vocab.json', 'w') as f:
-            json.dump(self.idx2item, f)
-
+        self.vocab = self.idx2item
 
     def encode(self, feature) -> dict:
         return {v:i for i, v in enumerate(feature.unique())}
@@ -101,7 +98,7 @@ class EASEDataset(BaseDataset):
     """
     def __init__(self, cfg):
         self.cfg = cfg
-        self.dataset = self.load(f'recommender/data/{cfg.data.data_code}_interaction_data.pkl')
+        self.dataset = self.load(f'recommender/example_data/{cfg.data.data_code}_interaction_data.pkl')
         
         self.data = self.dataset['interaction']
         self.user2idx = self.encode(self.data['user_id'])

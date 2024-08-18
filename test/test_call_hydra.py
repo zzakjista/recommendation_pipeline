@@ -7,13 +7,13 @@ from hydra.utils import instantiate
 
 
 
-@hydra.main(config_path='../recommender/configs', config_name="config.yaml")
+@hydra.main(config_path='../src/recommender/configs', config_name="config.yaml")
 def my_app(cfg: DictConfig) -> None:
     print(OmegaConf.to_yaml(cfg))
     print(cfg)
     optim = instantiate(cfg.optimizer, lr=cfg.optimizer.lr)
-    print(optim)
-    print(type(optim))
+    # print(optim)
+    # print(type(optim))
 
 
 if __name__ == "__main__":

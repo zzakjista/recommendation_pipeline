@@ -1,4 +1,6 @@
 __pycache__/
 .venv
-
 *.ipynb
+example_data
+mlruns
+artifacts

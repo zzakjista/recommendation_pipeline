@@ -8,9 +8,9 @@ class AEGenerator:
     Autoencoder의 실시간 추론을 구현한 Generator 클래스
     """
 
-    def __init__(self, model, args, vocab):
+    def __init__(self, model, cfg, vocab):
         self.model = model
-        self.num_items = args.num_items
+        self.num_items = cfg.dataset.num_items
         self.vocab = vocab
 
     def generate(self, user_id):
@@ -25,7 +25,7 @@ class AEGenerator:
         """
         user_id = [user_id]
         mat = self.get_matrix()
-        recon_mat = self.model.run(mat)
+        recon_mat = self.model(mat)
         recon_mat = recon_mat.softmax(dim=1)
         recon_mat[mat == 1] = -1.
         rec_list = recon_mat.argsort(dim=1)
