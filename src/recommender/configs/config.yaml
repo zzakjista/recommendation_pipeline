@@ -1,0 +1,17 @@
+# 공통 변수
+experiment_name : 'autoencoder test'
+seed : 42
+mode : train
+device : cpu
+model_code : autoencoder
+topk : 5
+defaults:
+
+  - data : data_source
+  - dataset : autoencoder
+  - dataloader : pytorch_dataloader
+  - optimizer : adam
+  - criterion : mse
+  - model: autoencoder
+  - runner : autoencoder
+  - generator : autoencoder
